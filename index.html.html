@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Croatian M&amp;A Vocabulary Quiz</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2128;
+    --border: rgba(255,255,255,0.08);
+    --border-hover: rgba(255,255,255,0.18);
+    --gold: #C9963A;
+    --gold-light: #E8B96A;
+    --gold-dim: rgba(201,150,58,0.13);
+    --text: #e6edf3;
+    --text-muted: #7d8590;
+    --text-dim: #4a5260;
+    --correct: #2ea043;
+    --correct-bg: rgba(46,160,67,0.12);
+    --correct-border: rgba(46,160,67,0.4);
+    --wrong: #da3633;
+    --wrong-bg: rgba(218,54,51,0.10);
+    --wrong-border: rgba(218,54,51,0.35);
+    --reveal: rgba(46,160,67,0.08);
+    --blue: #79b8ff;
+    --blue-dim: rgba(100,180,255,0.08);
+    --blue-border: rgba(100,180,255,0.35);
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+  html { font-size: 16px; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: Georgia, 'Times New Roman', serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2.5rem 1rem 5rem;
+  }
+  .shell { width: 100%; max-width: 660px; }
+
+  .quiz-title-block {
+    text-align: center; margin-bottom: 2.5rem; padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .quiz-title {
+    font-size: 28px; font-weight: bold; color: var(--text);
+    letter-spacing: 0.01em; line-height: 1.2; margin-bottom: 0.4rem;
+  }
+  .quiz-subtitle {
+    font-size: 13px; font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: var(--text-dim); letter-spacing: 0.06em;
+  }
+
+  /* ── Header ── */
+  .hdr {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 2.25rem;
+  }
+  .hdr-left { display: flex; align-items: center; gap: 12px; }
+  .hdr-emblem {
+    width: 36px; height: 36px; flex-shrink: 0;
+  }
+  .hdr-titles { display: flex; flex-direction: column; gap: 2px; }
+  .hdr-title {
+    font-size: 13px; font-family: 'Helvetica Neue', Arial, sans-serif;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted);
+    line-height: 1;
+  }
+  .hdr-sub {
+    font-size: 11px; font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: var(--text-dim); letter-spacing: 0.04em;
+  }
+  .hdr-right { display: flex; align-items: center; gap: 14px; }
+  .hdr-score {
+    font-size: 13px; font-family: 'Helvetica Neue', Arial, sans-serif; color: var(--text-muted);
+  }
+  .hdr-score span { color: var(--gold); font-weight: 600; }
+  .streak-badge {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 12px; font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: var(--text-dim);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .streak-badge.show { opacity: 1; }
+  .streak-badge.hot { color: #f78166; }
+  .streak-num { font-weight: 600; font-size: 13px; }
+
+  /* ── Dot progress ── */
+  .progress-wrap { margin-bottom: 2.25rem; }
+  .progress-meta {
+    display: flex; justify-content: space-between;
+    font-size: 11px; font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: var(--text-dim); margin-bottom: 10px; letter-spacing: 0.04em;
+  }
+  .dot-track {
+    display: flex; gap: 4px; align-items: center;
+  }
+  .dot {
+    height: 4px; flex: 1; border-radius: 2px;
+    background: var(--border); transition: background 0.4s ease;
+  }
+  .dot.done { background: var(--gold); }
+  .dot.correct-dot { background: var(--correct); }
+  .dot.wrong-dot { background: var(--wrong); }
+  .dot.current { background: var(--gold); opacity: 0.4; }
+
+  /* ── Question card ── */
+  .q-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 1.75rem; margin-bottom: 1rem;
+    animation: fadeUp 0.32s cubic-bezier(.22,.68,0,1.2);
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px) scale(0.99); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .q-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; }
+  .q-badge {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; font-family: 'Helvetica Neue', Arial, sans-serif;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 4px;
+    border: 1px solid var(--gold); color: var(--gold); background: var(--gold-dim);
+  }
+  .q-badge.wb-badge { border-color: var(--blue-border); color: var(--blue); background: var(--blue-dim); }
+  .q-badge.oo-badge { border-color: rgba(46,160,67,0.45); color: #7ee787; background: rgba(46,160,67,0.08); }
+  .q-badge.tf-badge { border-color: rgba(240,160,60,0.5); color: #e3a43a; background: rgba(240,160,60,0.08); }
+  .q-badge.rp-badge { border-color: rgba(180,130,255,0.45); color: #c9a4f0; background: rgba(180,130,255,0.08); }
+  .q-badge.cu-badge { border-color: rgba(255,120,160,0.4); color: #f0899e; background: rgba(255,120,160,0.07); }
+  .q-badge svg { flex-shrink: 0; }
+  .opt.sentence-opt { font-size: 13px; font-style: italic; line-height: 1.6; }
+  .q-hint-wrap { display: flex; align-items: center; gap: 6px; }
+  .q-hint-icon svg { display: block; }
+  .q-hint {
+    font-size: 12px; font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: var(--text-dim); letter-spacing: 0.04em;
+  }
+
+  .q-text { font-size: 15px; line-height: 1.8; color: var(--text); margin-bottom: 1.25rem; }
+
+  /* ── MC options ── */
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .opt {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 0.9rem 1rem; cursor: pointer; font-size: 14px;
+    font-family: 'Helvetica Neue', Arial, sans-serif; color: var(--text);
+    line-height: 1.5; text-align: left;
+    transition: border-color 0.15s, background 0.15s; width: 100%;
+  }
+  .opt:hover:not(.locked) { border-color: var(--border-hover); background: rgba(255,255,255,0.04); }
+  .opt-letter {
+    min-width: 22px; height: 22px; border-radius: 50%; background: var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: var(--text-dim);
+    flex-shrink: 0; margin-top: 1px; transition: background 0.15s, color 0.15s;
+  }
+  .opt.correct { border-color: var(--correct-border); background: var(--correct-bg); }
+  .opt.correct .opt-letter { background: var(--correct); color: #fff; }
+  .opt.wrong   { border-color: var(--wrong-border);   background: var(--wrong-bg); }
+  .opt.wrong   .opt-letter { background: var(--wrong); color: #fff; }
+  .opt.reveal  { border-color: var(--correct-border); background: var(--reveal); }
+  .opt.reveal  .opt-letter { background: var(--correct); color: #fff; }
+  .opt.locked  { cursor: default; }
+
+  /* ── Word bank ── */
+  .wb-label { font-size: 11px; font-family: 'Helvetica Neue', Arial, sans-serif; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 10px; }
+  .blank-display {
+    display: inline-block; min-width: 160px;
+    border-bottom: 2px solid var(--gold); color: var(--gold-light);
+    font-style: italic; padding: 0 6px 2px; vertical-align: bottom;
+    font-size: 15px; transition: color 0.2s, border-color 0.2s;
+  }
+  .blank-display.empty { color: transparent; }
+  .blank-display.correct-b { border-color: var(--correct); color: #7ee787; }
+  .blank-display.wrong-b   { border-color: var(--wrong);   color: #ff8b8b; }
+  .word-bank { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.25rem; }
+  .wb-chip {
+    background: var(--surface2); border: 1px solid var(--border-hover);
+    border-radius: 6px; padding: 6px 14px; font-size: 13px;
+    font-family: 'Helvetica Neue', Arial, sans-serif; color: var(--text-muted);
+    cursor: pointer; transition: background 0.15s, border-color 0.15s, color 0.15s;
+    user-select: none;
+  }
+  .wb-chip:hover:not(.used):not(.locked) { background: rgba(255,255,255,0.06); border-color: var(--gold); color: var(--gold-light); }
+  .wb-chip.selected    { background: var(--gold-dim); border-color: var(--gold); color: var(--gold-light); }
+  .wb-chip.locked      { cursor: default; }
+  .wb-chip.chip-correct { background: var(--correct-bg); border-color: var(--correct-border); color: #7ee787; }
+  .wb-chip.chip-wrong   { background: var(--wrong-bg);   border-color: var(--wrong-border);   color: #ff8b8b; }
+  .wb-chip.chip-reveal  { background: var(--reveal);     border-color: var(--correct-border); color: #7ee787; }
+  .wb-actions { display: flex; gap: 8px; }
+  .wb-submit {
+    background: var(--gold-dim); border: 1px solid var(--gold); border-radius: var(--radius);
+    padding: 0.55rem 1.25rem; font-size: 13px; font-family: 'Helvetica Neue', Arial, sans-serif;
+    letter-spacing: 0.06em; color: var(--gold-light); cursor: pointer; transition: background 0.15s;
+  }
+  .wb-submit:hover:not(:disabled) { background: rgba(201,150,58,0.22); }
+  .wb-submit:disabled { opacity: 0.35; cursor: default; }
+  .wb-clear {
+    background: transparent; border: 1px solid var(--border-hover); border-radius: var(--radius);
+    padding: 0.55rem 1rem; font-size: 13px; font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: var(--text-dim); cursor: pointer; transition: border-color 0.15s, color 0.15s;
+  }
+  .wb-clear:hover:not(:disabled) { color: var(--text-muted); }
+  .wb-clear:disabled { opacity: 0.25; cursor: default; }
+
+  /* ── Feedback ── */
+  .feedback {
+    margin-top: 1.25rem; border-radius: var(--radius); font-size: 14px;
+    font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.65;
+    display: none; animation: fadeUp 0.25s ease; overflow: hidden;
+  }
+  .feedback.show { display: block; }
+  .fb-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 0.75rem 1rem; font-weight: 600; font-size: 14px;
+  }
+  .feedback.fb-correct .fb-header { background: var(--correct-bg); border: 1px solid var(--correct-border); color: #7ee787; border-radius: var(--radius) var(--radius) 0 0; }
+  .feedback.fb-wrong   .fb-header { background: var(--wrong-bg);   border: 1px solid var(--wrong-border);   color: #ff8b8b; border-radius: var(--radius) var(--radius) 0 0; }
+  .fb-body {
+    padding: 0.85rem 1rem; border-left: 1px solid; border-right: 1px solid; border-bottom: 1px solid;
+    border-radius: 0 0 var(--radius) var(--radius);
+  }
+  .feedback.fb-correct .fb-body { border-color: var(--correct-border); }
+  .feedback.fb-wrong   .fb-body { border-color: var(--wrong-border); }
+  .explain-text { color: var(--text-muted); font-size: 13px; line-height: 1.65; }
+
+  /* ── Example ── */
+  .q-example-wrap {
+    margin-top: 1.25rem; padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    display: none; animation: fadeUp 0.3s ease;
+  }
+  .q-example-wrap.show { display: block; }
+  .q-example-label {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; font-family: 'Helvetica Neue', Arial, sans-serif;
+    text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 7px;
+  }
+  .q-example {
+    font-size: 13.5px; font-family: Georgia, serif; font-style: italic;
+    color: var(--text-muted); line-height: 1.7;
+    padding-left: 14px; border-left: 2px solid var(--gold-dim);
+  }
+
+  /* ── Nav ── */
+  .nav-row { display: flex; justify-content: flex-end; margin-top: 1rem; }
+  .next-btn {
+    background: transparent; border: 1px solid var(--border-hover); border-radius: var(--radius);
+    padding: 0.6rem 1.5rem; font-size: 13px; font-family: 'Helvetica Neue', Arial, sans-serif;
+    letter-spacing: 0.06em; color: var(--text-muted); cursor: pointer; display: none;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .next-btn.show { display: block; }
+  .next-btn:hover { border-color: var(--gold); color: var(--gold-light); }
+
+  /* ── Results ── */
+  .results { animation: fadeUp 0.4s ease; }
+  .results-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 2.5rem 2rem; text-align: center;
+  }
+  .results-label {
+    font-size: 11px; font-family: 'Helvetica Neue', Arial, sans-serif;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 1.75rem;
+  }
+  .ring-wrap { position: relative; width: 140px; height: 140px; margin: 0 auto 1.5rem; }
+  .ring-wrap svg { width: 140px; height: 140px; transform: rotate(-90deg); }
+  .ring-track { fill: none; stroke: var(--border); stroke-width: 8; }
+  .ring-fill  { fill: none; stroke: var(--gold); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1); }
+  .ring-text  {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .ring-score { font-size: 36px; font-weight: bold; color: var(--gold); line-height: 1; }
+  .ring-denom { font-size: 13px; color: var(--text-dim); font-family: 'Helvetica Neue', Arial, sans-serif; margin-top: 2px; }
+  .results-msg { font-size: 15px; color: var(--text); margin-bottom: 2rem; line-height: 1.6; }
+  .results-breakdown { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 2rem; }
+  .stat-cell {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1rem;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .stat-icon { flex-shrink: 0; }
+  .stat-right { text-align: left; }
+  .stat-num { font-size: 26px; font-weight: bold; line-height: 1; margin-bottom: 3px; }
+  .stat-num.green { color: var(--correct); }
+  .stat-num.red   { color: var(--wrong); }
+  .stat-lbl { font-size: 11px; font-family: 'Helvetica Neue', Arial, sans-serif; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+  .review-list { text-align: left; margin-bottom: 2rem; }
+  .review-heading {
+    font-size: 11px; font-family: 'Helvetica Neue', Arial, sans-serif;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim);
+    margin-bottom: 0.75rem; padding-bottom: 6px; border-bottom: 1px solid var(--border);
+  }
+  .review-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0; font-size: 13px; font-family: 'Helvetica Neue', Arial, sans-serif;
+    border-bottom: 1px solid var(--border);
+  }
+  .review-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .review-dot.ok  { background: var(--correct); }
+  .review-dot.bad { background: var(--wrong); }
+  .review-term { color: var(--text); flex: 1; }
+  .review-cluster { font-size: 11px; color: var(--text-dim); margin-right: 6px; }
+  .review-tag {
+    font-size: 11px; padding: 2px 8px; border-radius: 4px;
+    background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border);
+  }
+  .review-tag.ok-tag  { color: var(--correct); border-color: var(--correct-border); background: var(--correct-bg); }
+  .review-tag.bad-tag { color: var(--wrong);   border-color: var(--wrong-border);   background: var(--wrong-bg); }
+  .btn-row { display: flex; gap: 10px; justify-content: center; }
+  .restart-btn {
+    background: transparent; border: 1px solid var(--border-hover); border-radius: var(--radius);
+    padding: 0.65rem 1.5rem; font-size: 13px; font-family: 'Helvetica Neue', Arial, sans-serif;
+    letter-spacing: 0.06em; color: var(--text-muted); cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .restart-btn:hover { border-color: var(--gold); color: var(--gold-light); }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="quiz-title-block">
+    <div class="quiz-title">M&amp;A Vocabulary Quiz</div>
+    <div class="quiz-subtitle">Croatian Joint Stock Company Takeover Act</div>
+  </div>
+  <div class="hdr">
+    <div class="hdr-left">
+      <svg class="hdr-emblem" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="18" cy="18" r="17" stroke="#C9963A" stroke-width="1" stroke-opacity="0.4"/>
+        <line x1="18" y1="9" x2="18" y2="11" stroke="#C9963A" stroke-width="1.5" stroke-linecap="round" stroke-opacity="0.9"/>
+        <line x1="18" y1="11" x2="11" y2="16" stroke="#C9963A" stroke-width="1.2" stroke-linecap="round" stroke-opacity="0.7"/>
+        <line x1="18" y1="11" x2="25" y2="16" stroke="#C9963A" stroke-width="1.2" stroke-linecap="round" stroke-opacity="0.7"/>
+        <rect x="9" y="16" width="8" height="5" rx="2.5" fill="#C9963A" fill-opacity="0.15" stroke="#C9963A" stroke-width="1" stroke-opacity="0.6"/>
+        <rect x="19" y="16" width="8" height="5" rx="2.5" fill="#C9963A" fill-opacity="0.15" stroke="#C9963A" stroke-width="1" stroke-opacity="0.6"/>
+        <line x1="10" y1="24" x2="26" y2="24" stroke="#C9963A" stroke-width="1.2" stroke-linecap="round" stroke-opacity="0.5"/>
+        <line x1="18" y1="24" x2="18" y2="27" stroke="#C9963A" stroke-width="1.2" stroke-linecap="round" stroke-opacity="0.5"/>
+      </svg>
+      <div class="hdr-titles">
+        <div class="hdr-title">M&amp;A Vocabulary</div>
+        <div class="hdr-sub">Croatian Joint Stock Company Takeover Act · 15 terms</div>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <div class="streak-badge" id="streakBadge">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1C6 1 9 4 9 6.5C9 8.43 7.66 10 6 10C4.34 10 3 8.43 3 6.5C3 5 4.5 3.5 4.5 3.5C4.5 3.5 4.5 5 5.5 5.5C5.5 4 6 1 6 1Z" fill="#f78166"/></svg>
+        <span class="streak-num" id="streakNum">0</span>
+      </div>
+      <div class="hdr-score" id="scoreDisp">Score: <span>0</span></div>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-meta">
+      <span id="qMeta">Question 1 of 15</span>
+      <span id="pctMeta">0%</span>
+    </div>
+    <div class="dot-track" id="dotTrack"></div>
+  </div>
+
+  <div id="main"></div>
+</div>
+
+<script>
+const ICONS = {
+  'Key parties': `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="4.5" cy="4" r="2" stroke="#4a5260" stroke-width="1.2"/><circle cx="8.5" cy="4" r="2" stroke="#4a5260" stroke-width="1.2"/><path d="M1 11c0-2 1.6-3 3.5-3s3.5 1 3.5 3" stroke="#4a5260" stroke-width="1.2" stroke-linecap="round"/><path d="M8.5 8c1.2 0 2.5.8 2.5 2.5" stroke="#4a5260" stroke-width="1.2" stroke-linecap="round"/></svg>`,
+  'Offer mechanics': `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="2" y="1.5" width="9" height="10" rx="1.5" stroke="#4a5260" stroke-width="1.2"/><line x1="4.5" y1="5" x2="8.5" y2="5" stroke="#4a5260" stroke-width="1.2" stroke-linecap="round"/><line x1="4.5" y1="7.5" x2="8.5" y2="7.5" stroke="#4a5260" stroke-width="1.2" stroke-linecap="round"/><line x1="4.5" y1="9.5" x2="7" y2="9.5" stroke="#4a5260" stroke-width="1.2" stroke-linecap="round"/></svg>`,
+  'Thresholds &amp; calculations': `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1.5" y="8" width="2.5" height="3.5" rx="0.5" fill="#4a5260"/><rect x="5.25" y="5" width="2.5" height="6.5" rx="0.5" fill="#4a5260"/><rect x="9" y="2" width="2.5" height="9.5" rx="0.5" fill="#4a5260"/></svg>`,
+  'Bid obligations': `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1.5L8 4.5H11L8.5 6.5L9.5 9.5L6.5 7.5L3.5 9.5L4.5 6.5L2 4.5H5L6.5 1.5Z" stroke="#4a5260" stroke-width="1.2" stroke-linejoin="round"/></svg>`,
+  'Pre-bid tactics': `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="3.5" stroke="#4a5260" stroke-width="1.2"/><line x1="8" y1="8" x2="11.5" y2="11.5" stroke="#4a5260" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+  'Post-bid mechanics': `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 7L5 10L11 3" stroke="#4a5260" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  'Coordination &amp; attribution': `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="3" cy="3" r="1.5" stroke="#4a5260" stroke-width="1.2"/><circle cx="10" cy="3" r="1.5" stroke="#4a5260" stroke-width="1.2"/><circle cx="6.5" cy="10" r="1.5" stroke="#4a5260" stroke-width="1.2"/><line x1="4.2" y1="3.8" x2="8.8" y2="3.8" stroke="#4a5260" stroke-width="1"/><line x1="3.7" y1="4.3" x2="5.9" y2="8.8" stroke="#4a5260" stroke-width="1"/><line x1="9.3" y1="4.3" x2="7.1" y2="8.8" stroke="#4a5260" stroke-width="1"/></svg>`,
+  'Regulatory exemptions': `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1.5L11 3.5V7C11 9.5 8.5 11.5 6.5 12C4.5 11.5 2 9.5 2 7V3.5L6.5 1.5Z" stroke="#4a5260" stroke-width="1.2" stroke-linejoin="round"/></svg>`,
+  'Consideration types': `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="#4a5260" stroke-width="1.2"/><path d="M6.5 3.5V4.5M6.5 8.5V9.5M4 6.5C4 5.7 5.1 5 6.5 5C7.9 5 9 5.7 9 6.5C9 7.3 7.9 8 6.5 8C5.1 8 4 7.3 4 7" stroke="#4a5260" stroke-width="1.1" stroke-linecap="round"/></svg>`,
+  'Transparency obligations': `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><ellipse cx="6.5" cy="6.5" rx="5" ry="3" stroke="#4a5260" stroke-width="1.2"/><circle cx="6.5" cy="6.5" r="1.5" stroke="#4a5260" stroke-width="1.2"/></svg>`
+};
+
+const Q = [
+  {
+    type:'mc', term:'Target company', hint:'Key parties',
+    q:'A Croatian listed company has received an unsolicited approach from a foreign private equity fund seeking to acquire a controlling stake. Under the Croatian Joint Stock Company Takeover Act, how is the Croatian company classified?',
+    example:'HANFA confirmed that Pliva d.d. was the target company in the takeover bid launched by Barr Pharmaceuticals.',
+    opts:['Bidder','Issuer','Target company','Acquirer'],
+    correct:2,
+    explain:'Term: <strong>Target company</strong>. The target company is the company whose shares or securities are the subject of a public bid. This classification triggers specific obligations — including board neutrality duties and the right to publish a target board opinion — under the Croatian Joint Stock Company Takeover Act.'
+  },
+  {
+    type:'wb', term:'Bidder', hint:'Key parties',
+    q:'The natural or legal person that initiates a public bid to acquire shares in a listed company is referred to as the <span class="blank-display empty" id="blank">___</span>.',
+    example:'As the bidder, Mid Europa Partners was required to publish a full offer document within the statutory deadline and maintain the offered consideration for the entire acceptance period.',
+    answer:'bidder', bank:['bidder','target company','act in concert','whitewashing'],
+    explain:'Term: <strong>Bidder</strong>. The bidder is the legal or natural person launching the public bid. The Croatian Joint Stock Company Takeover Act imposes specific obligations on the bidder, including the duty to publish an offer document, maintain the offered consideration throughout the acceptance period, and comply with equal treatment rules.'
+  },
+  {
+    type:'mc', term:'Public bid', hint:'Offer mechanics',
+    q:'All registered shareholders of Atlantic Grupa received identical documentation and were entitled to tender at the same price throughout the 28-day offer window. Under the Croatian Joint Stock Company Takeover Act, which type of offer is this?',
+    example:'Once the public bid was published, all shareholders of the target had the right to tender their shares at the same offered price throughout the acceptance period.',
+    opts:['Negotiated bid','Voluntary bid','Competing public bid','Public bid'],
+    correct:3,
+    explain:'Term: <strong>Public bid</strong>. A public bid is a general offer directed at all shareholders of the target on equal and transparent terms. The equal-treatment principle is a cornerstone of takeover regulation — preventing bidders from cherry-picking shareholders or offering preferential prices to selected holders.'
+  },
+  {
+    type:'wb', term:'Competing public bid', hint:'Offer mechanics',
+    q:'HANFA received a second offer document for the same listed target while the original bidder\'s acceptance period was still running. Under the Croatian Joint Stock Company Takeover Act, this new offer is classified as a <span class="blank-display empty" id="blank">___</span>.',
+    example:'When a competing public bid was filed by a strategic investor two weeks into the acceptance period, the original bidder was entitled to revise its offer price upward.',
+    answer:'competing public bid', bank:['competing public bid','mandatory bid','negotiated bid','voluntary bid'],
+    explain:'Term: <strong>Competing public bid</strong>. A competing public bid is a rival offer for the same target launched during an ongoing bid period. The Croatian Joint Stock Company Takeover Act sets specific rules on timing and documentation for competing bids, and the original bidder typically has the right to revise its offer upward in response.'
+  },
+  {
+    type:'wb', term:'Qualified share', hint:'Thresholds &amp; calculations',
+    q:'Shares carrying voting rights that count toward the controlling threshold calculation are called <span class="blank-display empty" id="blank">___</span>.',
+    example:'The preference shares issued by the target carried no voting rights and were therefore excluded from the calculation — only qualified shares were counted toward the controlling threshold.',
+    answer:'qualified shares', bank:['qualified shares','share capital','disclosure triggers','controlling threshold'],
+    explain:'Term: <strong>Qualified shares</strong>. Qualified shares are shares carrying voting rights relevant to determining whether the controlling threshold has been crossed. Non-voting preference shares are typically excluded. Accurate classification is essential for any mandatory bid analysis.'
+  },
+  {
+    type:'tf', term:'Mandatory bid', hint:'Bid obligations',
+    q:'Which of the following statements about a mandatory bid is correct?',
+    example:'Having crossed 25% of qualified shares through a series of open-market purchases, the fund was required to launch a mandatory bid for the remaining shares within 30 days.',
+    opts:[
+      'A mandatory bid may be launched at any consideration the bidder chooses, with no statutory price floor',
+      'A mandatory bid must be extended to all remaining shareholders of the target company',
+      'A mandatory bid is triggered only when the bidder crosses the squeeze-out threshold of 95%',
+      'Filing a mandatory bid exempts the acquirer from all outstanding disclosure trigger obligations'
+    ],
+    correct:1,
+    explain:'Term: <strong>Mandatory bid</strong>. Only B is correct. The mandatory bid must address all remaining shareholders at a statutory minimum price. A is wrong — the Croatian Joint Stock Company Takeover Act imposes a regulated price floor. C confuses the mandatory bid threshold with the squeeze-out threshold. D is wrong — disclosure obligations run independently and are not extinguished by launching a bid.'
+  },
+  {
+    type:'rp', term:'Controlling threshold', hint:'Thresholds &amp; calculations',
+    q:'Which pair of terms are most directly connected in Croatian M&amp;A law — crossing one immediately triggers the obligation to comply with the other?',
+    example:'The fund\'s acquisition of an additional 3% stake pushed its holding to 26%, crossing the controlling threshold and immediately triggering the mandatory bid obligation.',
+    opts:[
+      'Stakebuilding  ↔  Squeeze out',
+      'Controlling threshold  ↔  Mandatory bid',
+      'Whitewashing  ↔  Competing public bid',
+      'Disclosure trigger  ↔  Combined consideration'
+    ],
+    correct:1,
+    explain:'Term: <strong>Controlling threshold</strong>. The controlling threshold and mandatory bid are directly linked by statute: crossing the controlling threshold automatically and unconditionally triggers the mandatory bid obligation. No other single event in Croatian M&amp;A law creates such an immediate causal chain between two terms.'
+  },
+  {
+    type:'wb', term:'Act in concert', hint:'Coordination &amp; attribution',
+    q:'Two funds held 14% and 13% of the target respectively, but HANFA aggregated their stakes after finding they had coordinated voting decisions over six months — ruling that they <span class="blank-display empty" id="blank">___</span>.',
+    example:'HANFA determined that the two funds act in concert because they had coordinated their voting and acquisition strategy over several months, and aggregated their stakes accordingly for threshold calculation purposes.',
+    answer:'act in concert', bank:['act in concert','stakebuilding','squeeze out','whitewashing'],
+    explain:'Term: <strong>Act in concert</strong>. Parties acting in concert are treated as a single acquirer for threshold calculation. Their combined stakes are aggregated, meaning the group may trigger a mandatory bid obligation even if no individual member holds a controlling stake on their own.'
+  },
+  {
+    type:'oo', term:'Stakebuilding', hint:'Pre-bid tactics',
+    q:'Three of the following terms describe activities or mechanisms that typically arise <em>before</em> a formal public bid is launched. Which is the exception?',
+    example:'The private equity firm spent three months stakebuilding in Atlantic Grupa before publicly declaring its intention to launch a takeover bid, carefully managing each disclosure trigger along the way.',
+    opts:['Stakebuilding','Whitewashing','Disclosure trigger','Squeeze out'],
+    correct:3,
+    explain:'Term: <strong>Stakebuilding</strong>. Stakebuilding, whitewashing, and disclosure triggers all arise in the pre-bid phase — they concern how a stake is built and disclosed before any offer is launched. Squeeze out is the exception: it is a post-bid mechanism, exercised only after the offer closes and the bidder has crossed the statutory 95% threshold.'
+  },
+  {
+    type:'wb', term:'Squeeze out', hint:'Post-bid mechanics',
+    q:'With 95.8% of the target\'s share capital in hand, the acquirer notified the remaining minority shareholders that their shares would be compulsorily purchased at the offer price — initiating a <span class="blank-display empty" id="blank">___</span>.',
+    example:'Three months after the offer closed, the bidder exercised its squeeze out right to acquire the remaining 4.2% minority stake at the same price as the original offer, enabling a full delisting from the Zagreb Stock Exchange.',
+    answer:'squeeze out', bank:['squeeze out','mandatory bid','whitewashing','negotiated bid'],
+    explain:'Term: <strong>Squeeze out</strong>. Squeeze out allows a bidder holding above the statutory threshold (typically 95% of share capital) to compulsorily purchase remaining minority shares at a fair price. It facilitates full ownership and enables delisting. Croatian M&amp;A law grants minorities a corresponding sell-out right at the same price.'
+  },
+  {
+    type:'cu', term:'Negotiated bid', hint:'Offer mechanics',
+    q:'Which sentence uses the term <em>negotiated bid</em> correctly?',
+    example:'The acquirer signed a lock-up agreement with the founding family — who held 42% of the share capital — making this a negotiated bid before any public announcement was made to HANFA or the market.',
+    opts:[
+      '"After the acceptance period closed with 96% of shares tendered, the acquirer launched a negotiated bid to acquire the remaining minority stake."',
+      '"Before any public announcement, the bidder agreed price and terms privately with the founding family — lawyers described the structure as a negotiated bid."',
+      '"HANFA ordered the fund to file a negotiated bid within 30 days of crossing the statutory controlling threshold."',
+      '"All shareholders received the same offer on identical terms under the negotiated bid, consistent with the equal-treatment principle."'
+    ],
+    correct:1,
+    explain:'Term: <strong>Negotiated bid</strong>. Only B is correct. A describes a squeeze out (post-95% compulsory purchase). C describes a mandatory bid (triggered by crossing the controlling threshold). D describes the equal-treatment feature of a public bid. Only B captures the defining characteristic of a negotiated bid: price and terms agreed privately with key shareholders before the formal public announcement.'
+  },
+  {
+    type:'wb', term:'Whitewashing', hint:'Regulatory exemptions',
+    q:'The distressed company\'s shareholders voted at an extraordinary general meeting to allow a rescue investor to subscribe for a 35% stake without triggering an offer for all remaining shares — approving a <span class="blank-display empty" id="blank">___</span>.',
+    example:'The rescue investor obtained whitewashing approval at an extraordinary general meeting, allowing it to subscribe for a controlling stake in the distressed company without being obliged to launch a mandatory bid for the remaining shares.',
+    answer:'whitewashing', bank:['whitewashing','stakebuilding','squeeze out','act in concert'],
+    explain:'Term: <strong>Whitewashing</strong>. Whitewashing allows a party to acquire a controlling stake without triggering a mandatory bid, typically following independent shareholder approval at a general meeting. It is most commonly used in rescue financings and restructurings where a mandatory bid would be disproportionate or commercially impractical.'
+  },
+  {
+    type:'mc', term:'Cash consideration', hint:'Consideration types',
+    q:'Which of the following correctly describes cash consideration and the circumstances in which the Croatian Joint Stock Company Takeover Act requires it to be offered?',
+    example:'Because the bidder had purchased 8% of the target\'s shares on market in the six months preceding the offer, Croatian M&amp;A law required it to offer cash consideration to all remaining shareholders at a price no lower than the highest price paid during that period.',
+    opts:['Stock exchange consideration','Cash consideration','Combined consideration','Mandatory cash alternative'],
+    correct:1,
+    explain:'Term: <strong>Cash consideration</strong>. Cash consideration is a fixed monetary payment per share. The Croatian Joint Stock Company Takeover Act requires a cash alternative — or cash as primary consideration — when the bidder has purchased target shares for cash during a specified pre-offer period, ensuring shareholders receive equivalent liquid value to recent market transactions.'
+  },
+  {
+    type:'mc', term:'Combined consideration', hint:'Consideration types',
+    q:'The bidder\'s offer document required independent valuation of two separate payment components and disclosure of an agreed exchange ratio alongside a fixed monetary amount per share. Which term describes this payment structure?',
+    example:'The offer document specified combined consideration of €16.50 in cash plus 0.3 newly issued shares of the bidder for each share of the target tendered, giving shareholders both immediate liquidity and equity participation in the enlarged group.',
+    opts:['Cash consideration','Stock consideration','Combined consideration','Negotiated consideration'],
+    correct:2,
+    explain:'Term: <strong>Combined consideration</strong>. Combined consideration is a hybrid payment structure offering both cash and securities. It allows bidders to manage liquidity constraints while giving target shareholders flexibility. Offer documents must clearly specify the ratio and the basis for valuing the securities component of the offer.'
+  },
+  {
+    type:'wb', term:'Disclosure triggers', hint:'Transparency obligations',
+    q:'The prescribed ownership thresholds at which a shareholder must notify HANFA and the market of their stake in a listed company are known as <span class="blank-display empty" id="blank">___</span>.',
+    example:'When the fund\'s stake crossed 10%, the portfolio manager immediately notified the compliance team — that level was one of the disclosure triggers requiring a public filing with HANFA within four trading days.',
+    answer:'disclosure triggers', bank:['disclosure triggers','controlling threshold','qualified shares','share capital'],
+    explain:'Term: <strong>Disclosure triggers</strong>. Disclosure triggers are ownership levels (e.g. 5%, 10%, 15%, 20%, 25%…) at which a shareholder must notify the target company, HANFA, and the market of their holding. They provide transparency about evolving ownership structures and alert the market to potential takeover activity at an early stage.'
+  }
+];
+
+let cur = 0, score = 0, streak = 0, results = [], selectedChip = null;
+
+function norm(s) { return s.trim().toLowerCase().replace(/[-\s]+/g,' '); }
+
+function buildDots() {
+  const t = document.getElementById('dotTrack');
+  if (!t) return;
+  t.innerHTML = Q.map((_,i) => `<div class="dot" id="d${i}"></div>`).join('');
+}
+
+function updateDot(idx, cls) {
+  const d = document.getElementById('d'+idx);
+  if (d) { d.className = 'dot ' + cls; }
+}
+
+function updateHdr() {
+  const done = cur < Q.length ? cur : Q.length;
+  document.getElementById('scoreDisp').innerHTML = 'Score: <span>' + score + ' / ' + done + '</span>';
+  const pct = Math.round((cur / Q.length) * 100);
+  document.getElementById('qMeta').textContent = cur < Q.length ? 'Question '+(cur+1)+' of '+Q.length : 'Complete';
+  document.getElementById('pctMeta').textContent = pct + '%';
+  const sb = document.getElementById('streakBadge');
+  const sn = document.getElementById('streakNum');
+  if (streak >= 2) {
+    sb.classList.add('show');
+    sb.classList.toggle('hot', streak >= 4);
+    sn.textContent = streak;
+  } else {
+    sb.classList.remove('show');
+  }
+}
+
+function render() {
+  if (cur >= Q.length) { showResults(); return; }
+  updateHdr();
+  selectedChip = null;
+  const q = Q[cur];
+  const isWB = q.type === 'wb';
+  const isCU = q.type === 'cu';
+  const icon = ICONS[q.hint] || '';
+
+  const BADGE = {
+    mc: { cls:'',          icon:'<path d="M2 5.5L4.5 8L9 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>',  label:'Multiple choice' },
+    wb: { cls:' wb-badge', icon:'<path d="M1 5.5H10M5.5 1V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',                         label:'Word bank' },
+    oo: { cls:' oo-badge', icon:'<circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.3"/><line x1="3.5" y1="3.5" x2="7.5" y2="7.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',  label:'Odd one out' },
+    tf: { cls:' tf-badge', icon:'<path d="M1.5 5.5L4 8L9.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>',  label:'True or false' },
+    rp: { cls:' rp-badge', icon:'<circle cx="2.5" cy="5.5" r="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="8.5" cy="5.5" r="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4 5.5H7M6 4L7.5 5.5L6 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>',  label:'Relationship pair' },
+    cu: { cls:' cu-badge', icon:'<path d="M2 3H9M2 5.5H7M2 8H8.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>',                    label:'Correct usage' }
+  };
+  const b = BADGE[q.type] || BADGE.mc;
+
+  let body = '';
+  if (!isWB) {
+    body = `<div class="options">${q.opts.map((o,i)=>`
+      <button class="opt${isCU?' sentence-opt':''}" data-i="${i}" onclick="chooseOpt(${i})">
+        <span class="opt-letter">${String.fromCharCode(65+i)}</span>
+        <span>${o}</span>
+      </button>`).join('')}</div>`;
+  } else {
+    const shuffled = [...q.bank].sort(()=>Math.random()-0.5);
+    body = `
+      <div class="wb-label">Word bank — select the correct term</div>
+      <div class="word-bank" id="bank">
+        ${shuffled.map(w=>`<button class="wb-chip" data-word="${w}" onclick="selectChip(this,'${w.replace(/'/g,"\\'")}')">
+          ${w.charAt(0).toUpperCase()+w.slice(1)}
+        </button>`).join('')}
+      </div>
+      <div class="wb-actions">
+        <button class="wb-submit" id="wbsub" onclick="submitWB()" disabled>Confirm answer</button>
+        <button class="wb-clear" id="wbclr" onclick="clearChip()" disabled>Clear</button>
+      </div>`;
+  }
+
+  document.getElementById('main').innerHTML = `
+    <div class="q-card">
+      <div class="q-meta">
+        <span class="q-badge${b.cls}">
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none">${b.icon}</svg>
+          ${b.label}
+        </span>
+        <div class="q-hint-wrap">
+          <span class="q-hint-icon">${icon}</span>
+          <span class="q-hint">${q.hint}</span>
+        </div>
+      </div>
+      <div class="q-text">${q.q}</div>
+      ${body}
+      <div class="feedback" id="fb-box"></div>
+      <div class="q-example-wrap" id="ex-wrap">
+        <div class="q-example-label">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4C2 2.9 2.9 2 4 2H8C9.1 2 10 2.9 10 4V7C10 8.1 9.1 9 8 9H6.5L4.5 10.5V9H4C2.9 9 2 8.1 2 7V4Z" stroke="#4a5260" stroke-width="1.1"/></svg>
+          Use it like this in a sentence:
+        </div>
+        <div class="q-example">${q.example}</div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="next-btn" id="nxt" onclick="advance()">${cur < Q.length-1 ? 'Next question &rarr;' : 'See results &rarr;'}</button>
+    </div>`;
+
+  updateDot(cur, 'current');
+}
+
+function selectChip(el, word) {
+  if (el.classList.contains('locked')) return;
+  document.querySelectorAll('.wb-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedChip = word;
+  const blank = document.getElementById('blank');
+  if (blank) { blank.textContent = word.charAt(0).toUpperCase()+word.slice(1); blank.classList.remove('empty'); }
+  document.getElementById('wbsub').disabled = false;
+  document.getElementById('wbclr').disabled = false;
+}
+
+function clearChip() {
+  document.querySelectorAll('.wb-chip').forEach(c => c.classList.remove('selected'));
+  selectedChip = null;
+  const blank = document.getElementById('blank');
+  if (blank) { blank.textContent = '___'; blank.classList.add('empty'); }
+  document.getElementById('wbsub').disabled = true;
+  document.getElementById('wbclr').disabled = true;
+}
+
+function submitWB() {
+  if (!selectedChip) return;
+  const q = Q[cur];
+  const correct = norm(selectedChip) === norm(q.answer);
+  lockWB(selectedChip, correct, q.answer);
+  if (correct) { score++; streak++; } else { streak = 0; }
+  results.push({ term: q.term, hint: q.hint, correct });
+  document.getElementById('scoreDisp').innerHTML = 'Score: <span>' + score + ' / ' + (cur+1) + '</span>';
+  showFeedback(correct, q);
+  updateDot(cur, correct ? 'correct-dot' : 'wrong-dot');
+  updateHdr();
+}
+
+function lockWB(chosen, correct, answer) {
+  document.querySelectorAll('.wb-chip').forEach(c => {
+    c.classList.add('locked'); c.onclick = null;
+    const w = c.getAttribute('data-word');
+    if (w === chosen && correct)  c.classList.add('chip-correct');
+    else if (w === chosen)        c.classList.add('chip-wrong');
+    else if (norm(w) === norm(answer) && !correct) c.classList.add('chip-reveal');
+  });
+  const blank = document.getElementById('blank');
+  if (blank) { blank.classList.add(correct ? 'correct-b' : 'wrong-b'); blank.classList.remove('empty'); }
+  document.getElementById('wbsub').disabled = true;
+  document.getElementById('wbclr').disabled = true;
+}
+
+function chooseOpt(idx) {
+  const opts = document.querySelectorAll('.opt');
+  if (!opts.length) return;
+  opts.forEach(o => { o.classList.add('locked'); o.onclick = null; });
+  const q = Q[cur];
+  const correct = idx === q.correct;
+  if (correct) { opts[idx].classList.add('correct'); score++; streak++; }
+  else { opts[idx].classList.add('wrong'); opts[q.correct].classList.add('reveal'); streak = 0; }
+  results.push({ term: q.term, hint: q.hint, correct });
+  document.getElementById('scoreDisp').innerHTML = 'Score: <span>' + score + ' / ' + (cur+1) + '</span>';
+  showFeedback(correct, q);
+  updateDot(cur, correct ? 'correct-dot' : 'wrong-dot');
+  updateHdr();
+}
+
+function showFeedback(correct, q) {
+  const fb = document.getElementById('fb-box');
+  fb.className = 'feedback show ' + (correct ? 'fb-correct' : 'fb-wrong');
+  const icon = correct
+    ? `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#2ea043" stroke-width="1.2"/><path d="M5 8.5L7 10.5L11 6" stroke="#2ea043" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+    : `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#da3633" stroke-width="1.2"/><path d="M5.5 5.5L10.5 10.5M10.5 5.5L5.5 10.5" stroke="#da3633" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+  fb.innerHTML = `
+    <div class="fb-header">${icon}${correct ? 'Correct.' : 'Incorrect.'}</div>
+    <div class="fb-body"><div class="explain-text">${q.explain}</div></div>`;
+  const ex = document.getElementById('ex-wrap');
+  if (ex) ex.classList.add('show');
+  document.getElementById('nxt').classList.add('show');
+}
+
+function advance() { cur++; render(); }
+
+function showResults() {
+  updateHdr();
+  const pct = Math.round((score / Q.length) * 100);
+  let msg;
+  if (pct === 100) msg = 'Perfect score — every term, every nuance. You are ready for the deal room.';
+  else if (pct >= 87) msg = 'Near-perfect. You have a confident command of this vocabulary — just a couple of terms to polish before you\'re deal-ready.';
+  else if (pct >= 67) msg = 'Solid result. The core framework is clearly there. A focused review of the flagged terms will sharpen the edges.';
+  else if (pct >= 47) msg = 'Good start — you know more than you think. Read through the explanations for the terms you missed and try again; the second attempt will look very different.';
+  else msg = 'Every expert starts here. Work through the term list with the explanations, and retake the quiz — the vocabulary will stick faster than you expect.';
+
+  const correct = results.filter(r=>r.correct).length;
+  const wrong   = results.filter(r=>!r.correct).length;
+  const bestStreak = results.reduce((acc,r,i,a)=>{
+    let s=0; for(let j=i;j<a.length&&a[j].correct;j++) s++;
+    return Math.max(acc,s);
+  },0);
+
+  const reviewHtml = results.map(r=>`
+    <div class="review-item">
+      <div class="review-dot ${r.correct?'ok':'bad'}"></div>
+      <div class="review-term">${r.term}</div>
+      <span class="review-cluster">${r.hint}</span>
+      <div class="review-tag ${r.correct?'ok-tag':'bad-tag'}">${r.correct?'Correct':'Review'}</div>
+    </div>`).join('');
+
+  const circumference = 2 * Math.PI * 52;
+  const offset = circumference - (pct / 100) * circumference;
+
+  document.getElementById('main').innerHTML = `
+    <div class="results">
+      <div class="results-card">
+        <div class="results-label">Quiz complete &mdash; 15 terms</div>
+        <div class="ring-wrap">
+          <svg viewBox="0 0 120 120">
+            <circle class="ring-track" cx="60" cy="60" r="52"/>
+            <circle class="ring-fill" id="ringFill" cx="60" cy="60" r="52"
+              stroke-dasharray="${circumference}"
+              stroke-dashoffset="${circumference}"/>
+          </svg>
+          <div class="ring-text">
+            <div class="ring-score">${score}</div>
+            <div class="ring-denom">of ${Q.length}</div>
+          </div>
+        </div>
+        <div class="results-msg">${msg}</div>
+        <div class="results-breakdown">
+          <div class="stat-cell">
+            <div class="stat-icon">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="13" stroke="#2ea043" stroke-width="1.2" stroke-opacity="0.4"/><path d="M9 14.5L12 17.5L19 11" stroke="#2ea043" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="stat-right">
+              <div class="stat-num green">${correct}</div>
+              <div class="stat-lbl">Correct</div>
+            </div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-icon">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="13" stroke="#da3633" stroke-width="1.2" stroke-opacity="0.4"/><path d="M10 10L18 18M18 10L10 18" stroke="#da3633" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+            <div class="stat-right">
+              <div class="stat-num red">${wrong}</div>
+              <div class="stat-lbl">To review</div>
+            </div>
+          </div>
+        </div>
+        ${bestStreak >= 3 ? `<div style="text-align:center;margin-bottom:1.5rem;font-size:13px;font-family:'Helvetica Neue',Arial,sans-serif;color:var(--text-dim)">Best streak: <span style="color:#f78166;font-weight:600">${bestStreak} in a row</span></div>` : ''}
+        <div class="review-list">
+          <div class="review-heading">Term-by-term summary</div>
+          ${reviewHtml}
+        </div>
+        <div class="btn-row">
+          <button class="restart-btn" onclick="restart()">Restart quiz</button>
+        </div>
+      </div>
+    </div>`;
+
+  setTimeout(() => {
+    const ring = document.getElementById('ringFill');
+    if (ring) ring.style.strokeDashoffset = offset;
+  }, 80);
+}
+
+function restart() { cur = 0; score = 0; streak = 0; results = []; selectedChip = null; buildDots(); render(); }
+
+buildDots();
+render();
+</script>
+</body>
+</html>
